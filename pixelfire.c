@@ -1,11 +1,12 @@
-#include <SDL3/SDL.h>
+#include <SDL2/SDL.h>
 #include <stdlib.h>
 #include <time.h>
 #include <stdbool.h>
 
 /* Resolution of the pixel fire buffer */
 #define FIRE_WIDTH 640
-#define FIRE_HEIGHT 480
+#define FIRE_HEIGHT 320
+
 
 /* Resolution of the actual SDL Window */
 #define WINDOW_WIDTH 1920
@@ -54,18 +55,19 @@ int main(int argc, char* argv[]) {
     srand((unsigned int)time(NULL));
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        SDL_Log("Could not initialize SDL3: %s", SDL_GetError());
+        SDL_Log("Could not initialize SDL2: %s", SDL_GetError());
         return 1;
     }
 
-    SDL_Window* window = SDL_CreateWindow("SDL3 Pixel Fire", WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+    SDL_Window* window = SDL_CreateWindow("SDL2 Pixel Fire", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
     if (!window) {
         SDL_Log("Could not create window: %s", SDL_GetError());
         SDL_Quit();
         return 1;
     }
 
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, NULL);
+    // SDL2 requires the rendering driver index (-1 for first available) and flags
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer) {
         SDL_Log("Could not create renderer: %s", SDL_GetError());
         SDL_DestroyWindow(window);
@@ -73,8 +75,8 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // Set logical presentation so the small 320x240 buffer scales nicely to 800x600
-    SDL_SetRenderLogicalPresentation(renderer, FIRE_WIDTH, FIRE_HEIGHT, SDL_LOGICAL_PRESENTATION_LETTERBOX);
+    // SDL2's way of handling internal resolution scaling (letterboxes by default)
+    SDL_RenderSetLogicalSize(renderer, FIRE_WIDTH, FIRE_HEIGHT);
 
     // Create a streaming texture that acts as our framebuffer
     SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, FIRE_WIDTH, FIRE_HEIGHT);
@@ -89,7 +91,8 @@ int main(int argc, char* argv[]) {
 
     while (running) {
         while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_EVENT_QUIT) {
+            // SDL2 uses SDL_QUIT instead of SDL3's SDL_EVENT_QUIT
+            if (event.type == SDL_QUIT) {
                 running = false;
             }
         }
@@ -109,7 +112,8 @@ int main(int argc, char* argv[]) {
 
         // Render to screen
         SDL_RenderClear(renderer);
-        SDL_RenderTexture(renderer, texture, NULL, NULL);
+        // SDL2 uses SDL_RenderCopy instead of SDL3's SDL_RenderTexture
+        SDL_RenderCopy(renderer, texture, NULL, NULL); 
         SDL_RenderPresent(renderer);
 
         // Cap frame rate at roughly 60 FPS
