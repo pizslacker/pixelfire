@@ -4,3 +4,4 @@ pixelfire: pixelfire.c
 
 clean:
 	rm -f pixelfire
+

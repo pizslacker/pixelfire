@@ -7,6 +7,7 @@
 #define FIRE_WIDTH 640
 #define FIRE_HEIGHT 320
 
+
 /* Resolution of the actual SDL Window */
 #define WINDOW_WIDTH 1920
 #define WINDOW_HEIGHT 1080
